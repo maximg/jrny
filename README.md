@@ -68,6 +68,14 @@ If there are conflicts when syncing with the remote, try `jrny-resolve`.
 
   If no date is provided, shows today’s file; otherwise displays the specified day’s entries.
 
+* **Undo**
+
+  ```bash
+  jrny-undo
+  ```
+
+  Undo the last entry. Note that it does a force-push to the remote and is NOT bullet-proof.
+
 * **Resolve conflicts**
 
   ```bash
@@ -75,3 +83,11 @@ If there are conflicts when syncing with the remote, try `jrny-resolve`.
   ```
 
   If there are conflicts in the journal repository, resolves them by accepting both changes.
+
+* **Use git**
+
+  ```bash
+  jrny-git [any git command]
+  ```
+
+  Executes a git command in the journal repository.
