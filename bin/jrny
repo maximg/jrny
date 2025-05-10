@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -e
+
+source "$(dirname "$0")/../scripts/jrny-functions.sh"
+
+# --- Configuration ---
+JRNY_ROOT="${JRNY_ROOT:-$(pwd)}"  # Allow custom root via environment, default to current dir
+
+# --- Input validation ---
+if [ "$#" -eq 0 ]; then
+  echo "Usage: jrny <your journal entry note>"
+  exit 1
+fi
+
+# --- Prepare paths ---
+note="$*"
+now=$(date '+%Y-%m-%d')
+year=$(date '+%Y')
+month=$(date '+%Y-%m')
+dir="${JRNY_ROOT}/${year}/${month}"
+file="${dir}/${now}.md"
+
+# --- Gather entry metadata ---
+entry_time=$(date '+%H:%M')
+host=$(hostname)
+cwd=$(pwd)
+
+# --- Write entry ---
+mkdir -p "${dir}"
+{
+  echo "${entry_time} / ${host} / ${cwd}"
+  echo " * ${note}"
+  echo ""
+} >> "${file}"
+
+echo "Entry added to ${file}"
+
+# --- Git sync operations ---
+cd "${JRNY_ROOT}"
+
+if [ -d ".git" ]; then
+  git add "${file}"
+  git commit -m "jrny: entry on ${now} at ${entry_time}" >/dev/null
+
+  if is_online; then
+    git pull --rebase
+    git push
+  else
+    echo ">>> Offline - skipping git sync."
+  fi
+
+  echo "Synced journal entry to Git."
+else
+  echo ">>> Git repository not found in ${JRNY_ROOT}. Skipping git operations."
+fi

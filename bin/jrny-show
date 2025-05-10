@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -e
+
+# --- Configuration ---
+JRNY_ROOT="${JRNY_ROOT:-$(pwd)}"  # Defaults to current directory if not set
+
+# --- Usage ---
+usage() {
+  echo "Usage: jrny-show [YYYY-MM-DD]"
+  echo "  If no date is provided, shows today's journal."
+  exit 1
+}
+
+# --- Argument parsing ---
+if [[ $# -gt 1 ]]; then
+  usage
+fi
+
+target_date="${1:-$(date '+%Y-%m-%d')}"
+
+# Validate simple YYYY-MM-DD format
+if ! [[ $target_date =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+  echo "Error: date must be in YYYY-MM-DD format."
+  exit 1
+fi
+
+year=${target_date:0:4}
+month=${target_date:0:7}
+file="${JRNY_ROOT}/${year}/${month}/${target_date}.md"
+
+# --- Display journal ---
+if [[ -f "$file" ]]; then
+  echo "Journal for ${target_date}"
+  echo "-------------------------"
+  cat "$file"
+else
+  echo "No journal entries found for ${target_date}."
+  exit 0
+fi
