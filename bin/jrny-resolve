@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -e
+
+# Configuration
+JRNY_ROOT="${JRNY_ROOT:-$(pwd)}"
+cd "$JRNY_ROOT"
+
+# Verify git repo
+if [[ ! -d .git ]]; then
+  echo "Error: Not a Git repository at $JRNY_ROOT"
+  exit 1
+fi
+
+# Find files with merge conflicts
+conflicts=$(git diff --name-only --diff-filter=U)
+if [[ -z "$conflicts" ]]; then
+  echo "No unresolved conflicts."
+  exit 0
+fi
+
+# Strip conflict markers and stage
+for file in $conflicts; do
+  sed -i -E '
+    /^\+*<{7}.*$/d
+    /^\+*>{7}.*$/d
+    /^\+*={7}.*$/c\
+  ' "$file"
+  git add "$file"
+done
+
+# Finish rebase and push
+git rebase --continue
+git push
+
+echo "Conflicts cleaned, rebase continued, and changes pushed."
