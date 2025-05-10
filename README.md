@@ -27,6 +27,8 @@ Journal for 2025-05-10
    ```bash
    git clone https://github.com/maximg/jrny-cli.git
    cd jrny-cli
+   # If needed, set execute permissions
+   chmod a+x bin/jrny*
    ```
 2. **Update PATH**
 
