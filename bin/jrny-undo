@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -e
+
+# jrny-undo: reset HEAD to the previous commit (undo last entry commit)
+
+source "$(dirname "$0")/../scripts/jrny-functions.sh"
+
+JRNY_ROOT="${JRNY_ROOT:-$(pwd)}"
+cd "$JRNY_ROOT" || {
+  echo "Error: could not cd to JRNY_ROOT='$JRNY_ROOT'"
+  exit 1
+}
+
+# Verify this is a git repo
+if [[ ! -d .git ]]; then
+  echo "Error: not a Git repository at $JRNY_ROOT"
+  exit 1
+fi
+
+if is_online; then
+  git pull --rebase
+fi
+
+# Check that there is a parent commit to reset to
+if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+  echo "Error: no previous commit to undo"
+  exit 1
+fi
+
+echo "Removing the last entry. Here it is, just in case:"
+git show HEAD
+
+# Ask for confirmation
+read -r -p "Are you sure you want to undo the last entry? [y/N] " answer
+case "$answer" in
+  [yY]|[yY][eE][sS])
+    echo "Reverting..." # fall-through
+    ;;
+  *)
+    echo "Abort: no changes made."
+    exit 0
+    ;;
+esac
+
+# Perform the reset
+git reset --hard HEAD^
+echo "Reverted to previous entry (HEAD is now $(git rev-parse --short HEAD))."
+
+if is_online; then
+  git push -f
+  echo "Synced journal entry to Git."
+else
+  echo ">>> Offline - skipping git sync."
+fi

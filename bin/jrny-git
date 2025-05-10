@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+# --- Configuration ---
+JRNY_ROOT="${JRNY_ROOT:-$(pwd)}"
+cd "$JRNY_ROOT"
+
+exec git "$@"
